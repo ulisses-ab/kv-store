@@ -34,8 +34,8 @@ private:
     static const size_t MAX_EVENTS = 1024;
     struct epoll_event events_[MAX_EVENTS];
 
-    std::function<void()> on_accept_;
-    std::function<void(int)> on_read_;
-    std::function<void(int)> on_write_;
-    std::function<void(int)> on_disconnect_;
+    std::function<void()> accept_handler_;
+    std::function<void(int)> read_handler_;
+    std::function<void(int)> write_handler_;
+    std::function<void(int)> disconnect_handler_;
 };

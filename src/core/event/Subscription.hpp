@@ -8,5 +8,5 @@ public:
     Subscription(Subscription&& other);
     ~Subscription();
 private:
-    std::function<void()> on_unsubscribe_;
+    std::function<void()> unsubscribe_handler_;
 };

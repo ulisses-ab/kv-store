@@ -14,7 +14,7 @@ public:
 
     void on_connect(std::function<void(int)> handler);
     void on_disconnect(std::function<void(int)> handler);
-    void on_receive(std::function<void(int, RespValue)> handler);
+    void on_receive(std::function<void(int, const RespValue&)> handler);
 
     void disconnect(int fd);
     void send(int fd, RespValue val);
@@ -32,7 +32,7 @@ private:
     std::unordered_map<int, std::unique_ptr<Connection>> connections_;
     Epoll epoll_;
 
-    std::function<void(int)> on_connect_;
-    std::function<void(int)> on_disconnect_;
-    std::function<void(int, RespValue)> on_receive_;
+    std::function<void(int)> connect_handler_;
+    std::function<void(int)> disconnect_handler_;
+    std::function<void(int, RespValue)> receive_handler_;
 };

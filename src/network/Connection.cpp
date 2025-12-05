@@ -75,7 +75,7 @@ void Connection::parse(const char* buffer, int n) {
         }
 
         if(parsed.has_value()) {
-            if(on_receive_) on_receive_(*parsed);
+            if(receive_handler_) receive_handler_(*parsed);
         }
     }
 }
@@ -101,24 +101,24 @@ void Connection::handle_write() {
         write_buffer_.erase(write_buffer_.begin(), write_buffer_.begin() + n);
     }
 
-    if(on_write_drained_) on_write_drained_();
+    if(write_drained_handler_) write_drained_handler_();
 }
 
-void Connection::send(RespValue val) {
+void Connection::send(const RespValue& val) {
     string data = val.encode();
     write_buffer_.insert(write_buffer_.end(), data.begin(), data.end());
-    if(on_need_write_) on_need_write_();
+    if(need_write_handler_) need_write_handler_();
 }
 
-void Connection::on_receive(std::function<void(RespValue)> handler) {
-    on_receive_ = handler;
+void Connection::on_receive(std::function<void(const RespValue&)> handler) {
+    receive_handler_ = handler;
 }
 
 void Connection::on_need_write(std::function<void()> handler) {
-    on_need_write_ = handler;
+    need_write_handler_ = handler;
 }
 
 void Connection::on_write_drained(std::function<void()> handler) {
-    on_write_drained_ = handler;
+    write_drained_handler_ = handler;
 }
 

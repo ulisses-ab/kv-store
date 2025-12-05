@@ -5,25 +5,26 @@
 #include <variant>
 #include <unordered_map>
 #include <functional>
+#include <deque>
 
-using DbValue = std::variant<std::string, int>;
+using DbValue = std::variant<std::string, std::deque<std::string>>;
+
+struct Entry { 
+    DbValue val;
+    std::optional<uint64_t> expiration;
+};
 
 class Storage {
 public:
-    std::optional<std::reference_wrapper<DbValue>> get(const std::string& key);
-    std::optional<std::reference_wrapper<const DbValue>> get(const std::string& key) const;
+    Entry* get(const std::string& key);
+    const Entry* get(const std::string& key) const;
 
-    void set(std::string key, DbValue val, std::optional<uint64_t>  duration_ms);
+    Entry* set(std::string key, DbValue val, std::optional<uint64_t>  duration_ms);
     bool expire(const std::string& key, std::optional<uint64_t> duration_ms);
     std::optional<DbValue> del(const std::string& key);
     
     void clear();
 private:
-    struct Entry { 
-        DbValue val;
-        std::optional<uint64_t> expiration;
-    };
-
     std::unordered_map<std::string, Entry>::iterator find_valid(const std::string& key);
     std::unordered_map<std::string, Entry>::const_iterator find_valid(const std::string& key) const;
 

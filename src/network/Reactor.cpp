@@ -67,14 +67,14 @@ void Reactor::accept() {
         return;
     }
 
-    if(on_connect_) on_connect_(fd);
+    if(connect_handler_) connect_handler_(fd);
 }   
 
 void Reactor::setup_connection_callbacks(Connection& conn) {
     int fd = conn.get_fd();
 
-    conn.on_receive([this, fd](RespValue val){
-        if(on_receive_) on_receive_(fd, val);
+    conn.on_receive([this, fd](const RespValue& val){
+        if(receive_handler_) receive_handler_(fd, val);
     });
 
     conn.on_need_write([this, fd](){
@@ -112,7 +112,7 @@ void Reactor::read(int fd) {
         }
     }
     catch(const exception& e) {
-        cerr << "Failed to handle read on fd " << fd << "\n";
+        cerr << "Failed to handle read on fd " << fd << ": " << e.what() << "\n";
     }
 }
 
@@ -142,7 +142,7 @@ void Reactor::disconnect(int fd) {
         << " from epoll: " << e.what() << "\n";
     }
 
-    if(on_disconnect_) on_disconnect_(fd);
+    if(disconnect_handler_) disconnect_handler_(fd);
 }
 
 void Reactor::send(int fd, RespValue val) {
@@ -156,14 +156,14 @@ void Reactor::send(int fd, RespValue val) {
 }
 
 void Reactor::on_connect(std::function<void(int)> handler) {
-    on_connect_ = handler;
+    connect_handler_ = handler;
 }
 
 void Reactor::on_disconnect(std::function<void(int)> handler) {
-    on_disconnect_ = handler;
+    disconnect_handler_ = handler;
 }
 
-void Reactor::on_receive(std::function<void(int, RespValue)> handler) {
-    on_receive_ = handler;
+void Reactor::on_receive(std::function<void(int, const RespValue&)> handler) {
+    receive_handler_ = handler;
 }
 

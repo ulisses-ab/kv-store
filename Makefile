@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -Iinclude -Wall -Wextra
+CXXFLAGS = -std=c++20 -O2 -Iinclude -Wall -Wextra
 
 # Sources
 SRC_ALL := $(shell find src -name "*.cpp")

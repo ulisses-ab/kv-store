@@ -1,5 +1,5 @@
 #include "catch2.hpp"
-#include "core/event/EventBus.hpp"
+#include "controller/event/EventBus.hpp"
 
 using namespace std;
 

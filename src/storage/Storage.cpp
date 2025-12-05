@@ -4,27 +4,29 @@
 
 using namespace std;
 
-optional<reference_wrapper<DbValue>> Storage::get(const string& key) {
+Entry* Storage::get(const string& key) {
     auto it = find_valid(key);
     if(it == map_.end()) {
-        return nullopt;
+        return nullptr;
     }
-    return it->second.val;
+    return &it->second;
 }
 
-optional<reference_wrapper<const DbValue>> Storage::get(const string& key) const {
+const Entry* Storage::get(const string& key) const {
     auto it = find_valid(key);
     if(it == map_.end()) {
-        return nullopt;
+        return nullptr;
     }
-    return it->second.val;
+    return &it->second;
 }
 
-void Storage::set(string key, DbValue val, optional<uint64_t> duration_ms) {
-    map_.insert_or_assign(
+Entry* Storage::set(string key, DbValue val, optional<uint64_t> duration_ms) {
+    auto it = map_.insert_or_assign(
         move(key), 
         Entry{move(val), compute_expiration(duration_ms)}
-    );
+    ).first;
+
+    return &it->second;
 }
 
 bool Storage::expire(const string& key, optional<uint64_t> duration_ms) {
@@ -52,7 +54,7 @@ void Storage::clear() {
     map_.clear();
 } 
 
-std::unordered_map<std::string, Storage::Entry>::iterator Storage::find_valid(const string& key) {
+std::unordered_map<std::string, Entry>::iterator Storage::find_valid(const string& key) {
     auto it = map_.find(key);
     if(it == map_.end()) return map_.end();
 
@@ -64,7 +66,7 @@ std::unordered_map<std::string, Storage::Entry>::iterator Storage::find_valid(co
     return it;
 }
 
-std::unordered_map<std::string, Storage::Entry>::const_iterator Storage::find_valid(const string& key) const {
+std::unordered_map<std::string, Entry>::const_iterator Storage::find_valid(const string& key) const {
     auto it = map_.find(key);
     if(it == map_.end()) return map_.end();
 

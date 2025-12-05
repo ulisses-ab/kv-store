@@ -58,17 +58,17 @@ void Epoll::process_event(const epoll_event &e) {
     if(ev & (EPOLLERR | EPOLLHUP)) return handle_disconnect(fd);
 
     if(fd == listener_fd_ && (ev & EPOLLIN)) {
-        if(on_accept_) on_accept_();
+        if(accept_handler_) accept_handler_();
         return;
     }
 
     if(ev & EPOLLIN) { 
-        if(on_read_) on_read_(fd); 
+        if(read_handler_) read_handler_(fd); 
         return; 
     }
 
     if(ev & EPOLLOUT) { 
-        if(on_write_) on_write_(fd); 
+        if(write_handler_) write_handler_(fd); 
         return; 
     }
 
@@ -78,7 +78,7 @@ void Epoll::process_event(const epoll_event &e) {
 void Epoll::handle_disconnect(int fd) {
     if(fd == listener_fd_) throw runtime_error("Fatal: listener closed");
     remove_client(fd);
-    if(on_disconnect_) on_disconnect_(fd);
+    if(disconnect_handler_) disconnect_handler_(fd);
 }
 
 
@@ -129,19 +129,19 @@ void Epoll::stop_write(int client_fd) {
 }
 
 void Epoll::on_accept(function<void()> handler) {
-    on_accept_ = handler;
+    accept_handler_ = handler;
 }
 
 void Epoll::on_read(function<void(int)> handler) {
-    on_read_ = handler;
+    read_handler_ = handler;
 }
 
 void Epoll::on_write(function<void(int)> handler) {
-    on_write_ = handler;
+    write_handler_ = handler;
 }
 
 void Epoll::on_disconnect(function<void(int)> handler) {
-    on_disconnect_ = handler;
+    disconnect_handler_ = handler;
 }
 
 void Epoll::close_fd() {

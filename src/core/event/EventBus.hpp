@@ -7,21 +7,24 @@
 
 #include "Subscription.hpp"
 
-class EventBus {
-public:
-    template<typename Event>
-    using Handler = std::function<void(const Event&)>;
+enum EventType {
 
-    template<typename Event>
-    Subscription subscribe(Handler<Event> handler);
-
-    template<typename Event>
-    void dispatch(const Event& event);
-
-    template<typename Event>
-    int handler_count();
-private:
-    std::unordered_map<std::type_index, std::list<std::any>> handlers_;
 };
 
-#include "EventBus.tpp"
+struct Event {
+    EventType type;
+    const void* data;
+};
+
+class EventBus {
+public:
+    using Handler = std::function<void(const void*)>;
+
+    Subscription subscribe(EventType eventType, Handler handler);
+
+    void dispatch(const Event& event);
+
+    int handler_count(EventType eventType);
+private:
+    std::unordered_map<EventType, std::list<Handler>> handlers_;
+};

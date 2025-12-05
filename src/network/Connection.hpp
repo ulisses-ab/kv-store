@@ -13,8 +13,8 @@ public:
 
     bool handle_read();
     void handle_write();
-    void send(RespValue val);
-    void on_receive(std::function<void(RespValue)> handler);
+    void send(const RespValue& val);
+    void on_receive(std::function<void(const RespValue&)> handler);
     void on_need_write(std::function<void()> handler);
     void on_write_drained(std::function<void()> handler);
 private:
@@ -26,8 +26,8 @@ private:
     std::deque<char> write_buffer_;
     RespParser parser_;
 
-    std::function<void(RespValue)> on_receive_;
-    std::function<void()> on_need_write_;
-    std::function<void()> on_write_drained_;
+    std::function<void(const RespValue&)> receive_handler_;
+    std::function<void()> need_write_handler_;
+    std::function<void()> write_drained_handler_;
 
 };
