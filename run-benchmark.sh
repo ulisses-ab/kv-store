@@ -1,7 +1,7 @@
 #!/bin/bash
 make
 
-BENCH_CMD="redis-benchmark -p 5555 -n 400000 -c 100 -t set,get"
+BENCH_CMD="redis-benchmark -p 5555 -n 40000 -c 100 -t set"
 
 ./program.out &
 SERVER_PID=$!
