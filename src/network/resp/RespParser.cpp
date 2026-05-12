@@ -25,7 +25,7 @@ optional<RespValue> RespParser::parse_char(char c) {
 
     if(!parsed.has_value()) return nullopt;
 
-    return complete_value(parsed.value());
+    return complete_value(move(*parsed));
 }
 
 std::optional<RespValue> RespParser::complete_value(RespValue val) {
@@ -33,9 +33,9 @@ std::optional<RespValue> RespParser::complete_value(RespValue val) {
 
     while(!stack_.empty()) {
         auto& frame = stack_.back();
-        frame.array.push_back(val);
+        frame.array.push_back(move(val));
         if(frame.array.size() == frame.array_length) {
-            val = RespValue::array(frame.array);
+            val = RespValue::array(move(frame.array));
             stack_.pop_back();
         }
         else {

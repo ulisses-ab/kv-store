@@ -7,7 +7,12 @@
 #include <functional>
 #include <deque>
 
-using DbValue = std::variant<std::string, std::deque<std::string>>;
+using StringList = std::deque<std::string>;
+
+using DbValue = std::variant<
+    std::string, 
+    StringList
+>;
 
 struct Entry { 
     DbValue val;

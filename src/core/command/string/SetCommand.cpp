@@ -44,10 +44,10 @@ SetCommand::ParseResult SetCommand::parse(const vector<string>& raw) {
             args->keep_ttl = true; 
         }
     }
-    catch(const std::invalid_argument&) {
+    catch(const invalid_argument&) {
         return ParseResult::fail(CommandError::INVALID_INT);
     }
-    catch(const std::out_of_range&) {
+    catch(const out_of_range&) {
         return ParseResult::fail(CommandError::OUT_OF_RANGE);
     }
 

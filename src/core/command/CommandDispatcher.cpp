@@ -4,13 +4,18 @@
 
 #include "string/SetCommand.hpp"
 #include "string/GetCommand.hpp"
-
+#include "list/RpushCommand.hpp"
+#include "list/LpushCommand.hpp"
+#include "list/LrangeCommand.hpp"
 
 using namespace std;
 
 CommandDispatcher::CommandDispatcher() {
     register_command("SET", make_unique<SetCommand>());
     register_command("GET", make_unique<GetCommand>());
+    register_command("RPUSH", make_unique<RpushCommand>());
+    register_command("LPUSH", make_unique<LpushCommand>());
+    register_command("LRANGE", make_unique<LrangeCommand>());
 }
 
 vector<Event> CommandDispatcher::dispatch(Session& session, Storage& storage, const std::vector<std::string>& raw) {

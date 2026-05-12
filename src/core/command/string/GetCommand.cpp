@@ -1,7 +1,5 @@
 #include "GetCommand.hpp"
 
-#include "../../../utils.hpp"
-
 using namespace std;
 
 GetCommand::ParseResult GetCommand::parse(const vector<string>& raw) {

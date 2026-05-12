@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <system_error>
 #include <fcntl.h>
+#include "spdlog/spdlog.h"
 
 using namespace std;
 
@@ -11,6 +12,8 @@ Connection::Connection(int fd) : fd_(fd) {
     if(fd < 0) {
         throw runtime_error("Connection constructor received invalid fd: " + std::to_string(fd));
     }
+
+    spdlog::debug("Connection constructed on fd {}", fd_);
 
     set_non_blocking();
 }
@@ -30,9 +33,12 @@ void Connection::set_non_blocking() {
             "fcntl(F_SETFL) failed to set O_NONBLOCK for fd " + to_string(fd_)
         );
     }
+
+    spdlog::debug("fd {} set to non-blocking mode", fd_);
 }
 
 Connection::~Connection() {
+    spdlog::debug("Connection destructed, closing fd {}", fd_);
     close(fd_);
 }
 
@@ -41,6 +47,7 @@ int Connection::get_fd() const {
 }
 
 bool Connection::handle_read() {
+    spdlog::trace("handle_read() called on fd {}", fd_);
     char temp[4096];
 
     while (true) {
@@ -49,13 +56,16 @@ bool Connection::handle_read() {
             if(errno == EAGAIN || errno == EWOULDBLOCK) {
                 break;  
             }
+            spdlog::error("read() failed on fd {}: {}", fd_, strerror(errno));
             throw system_error(errno, generic_category(), "read() failed");
         }
           
         if(n == 0) {
+            spdlog::trace("Connection closed by peer on fd {}", fd_);
             return true; // connection ended
         }
 
+        spdlog::trace("Read {} bytes from fd {}", n, fd_);
         parse(temp, n);
     }
 
@@ -71,16 +81,19 @@ void Connection::parse(const char* buffer, int n) {
         } 
         catch (const std::exception& e) {
             parser_.reset();
+            spdlog::warn("Parser error on fd {}: {}", fd_, e.what());
             throw;
         }
 
         if(parsed.has_value()) {
+            spdlog::debug("Parsed RespValue on fd {}", fd_);
             if(receive_handler_) receive_handler_(*parsed);
         }
     }
 }
 
-void Connection::handle_write() {
+bool Connection::handle_write() {
+    spdlog::trace("handle_write() called on fd {}", fd_);
     char temp[4096];
 
     while(!write_buffer_.empty()) {
@@ -91,22 +104,37 @@ void Connection::handle_write() {
 
         if(n < 0) {
             if(errno == EAGAIN || errno == EWOULDBLOCK) {
-                return;
+                spdlog::trace("fd {} write would block, returning", fd_);
+                return false; // maintain connection
             }
+            if(errno == EPIPE) {
+                spdlog::info("Broken pipe (EPIPE) on fd {}", fd_);
+                write_buffer_.clear();
+                if(write_drained_handler_) write_drained_handler_();
+                return true; // connection closed
+            }
+            spdlog::error("write() failed on fd {}: {}", fd_, strerror(errno));
             throw system_error(errno, generic_category(), "write() failed");
         }
 
-        if(n == 0) return;
+        if(n == 0) break;
 
         write_buffer_.erase(write_buffer_.begin(), write_buffer_.begin() + n);
+        spdlog::trace("Wrote {} bytes to fd {}, remaining {}", n, fd_, write_buffer_.size());
     }
 
-    if(write_drained_handler_) write_drained_handler_();
+    if(write_drained_handler_) {
+        spdlog::debug("Write buffer drained on fd {}", fd_);
+        write_drained_handler_();
+    }
+
+    return false; // maintain connection
 }
 
 void Connection::send(const RespValue& val) {
     string data = val.encode();
     write_buffer_.insert(write_buffer_.end(), data.begin(), data.end());
+    spdlog::debug("Queued {} bytes for fd {}, buffer size now {}", data.size(), fd_, write_buffer_.size());
     if(need_write_handler_) need_write_handler_();
 }
 
@@ -121,4 +149,3 @@ void Connection::on_need_write(std::function<void()> handler) {
 void Connection::on_write_drained(std::function<void()> handler) {
     write_drained_handler_ = handler;
 }
-

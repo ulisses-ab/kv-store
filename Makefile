@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -O2 -Iinclude -Wall -Wextra
+CXXFLAGS = -std=c++20 -g -Iinclude -Wall -Wextra -I../spdlog/include -L../spdlog/build -lspdlog -pthread
 
 # Sources
 SRC_ALL := $(shell find src -name "*.cpp")

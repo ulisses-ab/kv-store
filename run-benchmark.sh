@@ -1,8 +1,9 @@
 #!/bin/bash
+make
 
-BENCH_CMD="redis-benchmark -p 5555 -n 400000 -c 50 SET key value"
+BENCH_CMD="redis-benchmark -p 5555 -n 400000 -c 100 -t set,get"
 
-perf record -g ./program.out &
+./program.out &
 SERVER_PID=$!
 
 echo "Server PID: $SERVER_PID"

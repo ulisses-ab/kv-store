@@ -124,7 +124,9 @@ void Reactor::write(int fd) {
     }
 
     try {
-        it->second->handle_write();
+        if(it->second->handle_write()) {
+            disconnect(fd);
+        }
     }
     catch(const exception& e) {
         cerr << "Failed to handle write on fd " << fd << "\n";

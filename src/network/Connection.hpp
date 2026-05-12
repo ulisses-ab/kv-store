@@ -12,7 +12,7 @@ public:
     int get_fd() const;
 
     bool handle_read();
-    void handle_write();
+    bool handle_write();
     void send(const RespValue& val);
     void on_receive(std::function<void(const RespValue&)> handler);
     void on_need_write(std::function<void()> handler);
